@@ -1918,6 +1918,19 @@ def test_process_mask_empty():
     assert ops.scale_masks(torch.zeros(1, 0, 160, 160), (640, 640)).shape == (1, 0, 640, 640)
 
 
+@pytest.mark.parametrize("shape, expected", [((1, 4096), (1, 1920)), ((4096, 1), (1920, 1)), ((32, 64), (32, 64))])
+@pytest.mark.parametrize("suffix", [".jpg", ".hdr"])
+def test_compress_one_image_thin(tmp_path, shape, expected, suffix):
+    """Compress thin images through Pillow and the real OpenCV HDR fallback without zero-sized resizes."""
+    from ultralytics.data.utils import compress_one_image
+
+    image_path = tmp_path / f"image{suffix}"
+    dtype = np.float32 if suffix == ".hdr" else np.uint8
+    assert cv2.imwrite(str(image_path), np.ones((*shape, 3), dtype=dtype))
+    compress_one_image(image_path)
+    assert cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED).shape[:2] == expected
+
+
 def test_utils_files(tmp_path):
     """Test file handling utilities including file age, date, and paths with spaces."""
     from ultralytics.utils.files import file_age, file_date, get_latest_run, increment_path, spaces_in_path

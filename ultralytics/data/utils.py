@@ -969,7 +969,7 @@ def compress_one_image(f: str | Path, f_new: str | Path | None = None, max_dim: 
             im = im.convert("RGB")
         r = max_dim / max(im.height, im.width)  # ratio
         if r < 1.0:  # image too large
-            im = im.resize((int(im.width * r), int(im.height * r)))
+            im = im.resize((max(int(im.width * r), 1), max(int(im.height * r), 1)))
         _replace_image(f_new or f, lambda tmp: im.save(tmp, "JPEG", quality=quality, optimize=True))
     except Exception as e:  # use OpenCV
         LOGGER.warning(f"Image compression PIL failure {f}: {e}")
@@ -977,7 +977,7 @@ def compress_one_image(f: str | Path, f_new: str | Path | None = None, max_dim: 
         im_height, im_width = im.shape[:2]
         r = max_dim / max(im_height, im_width)  # ratio
         if r < 1.0:  # image too large
-            im = cv2.resize(im, (int(im_width * r), int(im_height * r)), interpolation=cv2.INTER_AREA)
+            im = cv2.resize(im, (max(int(im_width * r), 1), max(int(im_height * r), 1)), interpolation=cv2.INTER_AREA)
         _replace_image(f_new or f, lambda tmp: cv2.imwrite(tmp, im))
 
 
