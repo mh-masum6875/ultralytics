@@ -2083,6 +2083,20 @@ def test_classification_split_class_alignment(tmp_path, folders, names):
     assert sorted(sample[1] for sample in samples) == [1, 2]
 
 
+@pytest.mark.parametrize(
+    "shape, auto_shape", [((1, 1000), (32, 224)), ((1000, 1), (224, 32)), ((100, 200), (128, 224))]
+)
+@pytest.mark.parametrize("auto", [False, True])
+def test_classify_letterbox_thin_images(shape, auto_shape, auto):
+    """Keep thin images at least one pixel wide and high when letterboxing for classification."""
+    from ultralytics.data.augment import ClassifyLetterBox
+
+    image = np.full((*shape, 3), 255, dtype=np.uint8)
+    result = ClassifyLetterBox(224, auto=auto)(image)
+    assert result.shape == (*(auto_shape if auto else (224, 224)), 3)
+    assert (result == 255).any() and (result == 114).any()
+
+
 @pytest.fixture
 def image():
     """Load and return an image from a predefined source (OpenCV BGR)."""
